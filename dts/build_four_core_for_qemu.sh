@@ -1,0 +1,1 @@
+dtc -O dtb -o build/xiangshan_fourcore.dtb fpga-fourcore-system.dts

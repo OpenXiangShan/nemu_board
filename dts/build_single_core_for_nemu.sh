@@ -1,0 +1,1 @@
+dtc -O dtb -o build/xiangshan.dtb system.dts

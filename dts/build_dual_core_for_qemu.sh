@@ -1,0 +1,1 @@
+dtc -O dtb -o build/xiangshan_dualcore.dtb fpga-dualcore-system.dts
