@@ -25,7 +25,7 @@
 			mmu-type = "riscv,sv39";
 			next-level-cache = <&L11>;
 			reg = <0x0>;
-			riscv,isa = "rv64imafdc";
+			riscv,isa = "rv64imafdcvh";
 			status = "okay";
 			tlb-split;
 			L4: interrupt-controller {
@@ -50,7 +50,7 @@
 			mmu-type = "riscv,sv39";
 			next-level-cache = <&L11>;
 			reg = <0x1>;
-			riscv,isa = "rv64imafdc";
+			riscv,isa = "rv64imafdcvh";
 			status = "okay";
 			tlb-split;
 			L5: interrupt-controller {
