@@ -5,12 +5,11 @@
 	#size-cells = <2>;
 	compatible = "freechips,rocketchip-unknown-dev";
 	model = "freechips,rocketchip-unknown";
-	L19: cpus {
+	L21: cpus {
 		#address-cells = <1>;
 		#size-cells = <0>;
-		timebase-frequency = <1000000>;
-		L8: cpu@0 {
-			clock-frequency = <1000000>;
+		timebase-frequency = <0x989680>;
+		L13: cpu@0 {
 			compatible = "XiangShan,Nanhu", "riscv";
 			d-cache-block-size = <64>;
 			d-cache-sets = <64>;
@@ -24,11 +23,10 @@
 			i-tlb-sets = <1>;
 			i-tlb-size = <32>;
 			mmu-type = "riscv,sv39";
-			next-level-cache = <&L12>;
+			next-level-cache = <&L23>;
 			reg = <0x0>;
 			riscv,isa = "rv64imafdcvh";
 			status = "okay";
-			timebase-frequency = <1000000>;//50Khz
 			tlb-split;
 			L4: interrupt-controller {
 				#interrupt-cells = <1>;
@@ -36,8 +34,7 @@
 				interrupt-controller;
 			};
 		};
-		L9: cpu@1 {
-			clock-frequency = <0>;
+		L14: cpu@1 {
 			compatible = "XiangShan,Nanhu", "riscv";
 			d-cache-block-size = <64>;
 			d-cache-sets = <64>;
@@ -51,11 +48,10 @@
 			i-tlb-sets = <1>;
 			i-tlb-size = <32>;
 			mmu-type = "riscv,sv39";
-			next-level-cache = <&L12>;
+			next-level-cache = <&L23>;
 			reg = <0x1>;
 			riscv,isa = "rv64imafdcvh";
 			status = "okay";
-			timebase-frequency = <1000000>;//50Khz
 			tlb-split;
 			L5: interrupt-controller {
 				#interrupt-cells = <1>;
@@ -63,8 +59,7 @@
 				interrupt-controller;
 			};
 		};
-		L10: cpu@2 {
-			clock-frequency = <0>;
+		L15: cpu@2 {
 			compatible = "XiangShan,Nanhu", "riscv";
 			d-cache-block-size = <64>;
 			d-cache-sets = <64>;
@@ -78,11 +73,10 @@
 			i-tlb-sets = <1>;
 			i-tlb-size = <32>;
 			mmu-type = "riscv,sv39";
-			next-level-cache = <&L12>;
+			next-level-cache = <&L23>;
 			reg = <0x2>;
 			riscv,isa = "rv64imafdcvh";
 			status = "okay";
-			timebase-frequency = <1000000>;//50Khz
 			tlb-split;
 			L6: interrupt-controller {
 				#interrupt-cells = <1>;
@@ -90,8 +84,7 @@
 				interrupt-controller;
 			};
 		};
-		L11: cpu@3 {
-			clock-frequency = <0>;
+		L16: cpu@3 {
 			compatible = "XiangShan,Nanhu", "riscv";
 			d-cache-block-size = <64>;
 			d-cache-sets = <64>;
@@ -105,11 +98,10 @@
 			i-tlb-sets = <1>;
 			i-tlb-size = <32>;
 			mmu-type = "riscv,sv39";
-			next-level-cache = <&L12>;
+			next-level-cache = <&L23>;
 			reg = <0x3>;
 			riscv,isa = "rv64imafdcvh";
 			status = "okay";
-			timebase-frequency = <1000000>;//50Khz
 			tlb-split;
 			L7: interrupt-controller {
 				#interrupt-cells = <1>;
@@ -117,8 +109,108 @@
 				interrupt-controller;
 			};
 		};
+		L17: cpu@4 {
+			compatible = "XiangShan,Nanhu", "riscv";
+			d-cache-block-size = <64>;
+			d-cache-sets = <64>;
+			d-cache-size = <16384>;
+			d-tlb-sets = <1>;
+			d-tlb-size = <32>;
+			device_type = "cpu";
+			i-cache-block-size = <64>;
+			i-cache-sets = <64>;
+			i-cache-size = <16384>;
+			i-tlb-sets = <1>;
+			i-tlb-size = <32>;
+			mmu-type = "riscv,sv39";
+			next-level-cache = <&L23>;
+			reg = <0x4>;
+			riscv,isa = "rv64imafdcvh";
+			status = "okay";
+			tlb-split;
+			L8: interrupt-controller {
+				#interrupt-cells = <1>;
+				compatible = "riscv,cpu-intc";
+				interrupt-controller;
+			};
+		};
+		L18: cpu@5 {
+			compatible = "XiangShan,Nanhu", "riscv";
+			d-cache-block-size = <64>;
+			d-cache-sets = <64>;
+			d-cache-size = <16384>;
+			d-tlb-sets = <1>;
+			d-tlb-size = <32>;
+			device_type = "cpu";
+			i-cache-block-size = <64>;
+			i-cache-sets = <64>;
+			i-cache-size = <16384>;
+			i-tlb-sets = <1>;
+			i-tlb-size = <32>;
+			mmu-type = "riscv,sv39";
+			next-level-cache = <&L23>;
+			reg = <0x5>;
+			riscv,isa = "rv64imafdcvh";
+			status = "okay";
+			tlb-split;
+			L9: interrupt-controller {
+				#interrupt-cells = <1>;
+				compatible = "riscv,cpu-intc";
+				interrupt-controller;
+			};
+		};
+		L19: cpu@6 {
+			compatible = "XiangShan,Nanhu", "riscv";
+			d-cache-block-size = <64>;
+			d-cache-sets = <64>;
+			d-cache-size = <16384>;
+			d-tlb-sets = <1>;
+			d-tlb-size = <32>;
+			device_type = "cpu";
+			i-cache-block-size = <64>;
+			i-cache-sets = <64>;
+			i-cache-size = <16384>;
+			i-tlb-sets = <1>;
+			i-tlb-size = <32>;
+			mmu-type = "riscv,sv39";
+			next-level-cache = <&L23>;
+			reg = <0x6>;
+			riscv,isa = "rv64imafdcvh";
+			status = "okay";
+			tlb-split;
+			L10: interrupt-controller {
+				#interrupt-cells = <1>;
+				compatible = "riscv,cpu-intc";
+				interrupt-controller;
+			};
+		};
+		L20: cpu@7 {
+			compatible = "XiangShan,Nanhu", "riscv";
+			d-cache-block-size = <64>;
+			d-cache-sets = <64>;
+			d-cache-size = <16384>;
+			d-tlb-sets = <1>;
+			d-tlb-size = <32>;
+			device_type = "cpu";
+			i-cache-block-size = <64>;
+			i-cache-sets = <64>;
+			i-cache-size = <16384>;
+			i-tlb-sets = <1>;
+			i-tlb-size = <32>;
+			mmu-type = "riscv,sv39";
+			next-level-cache = <&L23>;
+			reg = <0x7>;
+			riscv,isa = "rv64imafdcvh";
+			status = "okay";
+			tlb-split;
+			L11: interrupt-controller {
+				#interrupt-cells = <1>;
+				compatible = "riscv,cpu-intc";
+				interrupt-controller;
+			};
+		};
 	};
-	L18: soc {
+	L22: soc {
 		#address-cells = <2>;
 		#size-cells = <2>;
 		compatible = "freechips,rocketchip-unknown-soc", "simple-bus";
@@ -131,7 +223,7 @@
 		};
 		L2: clint@38000000 {
 			compatible = "riscv,clint0";
-			interrupts-extended = <&L4 3 &L4 7 &L5 3 &L5 7 &L6 3 &L6 7 &L7 3 &L7 7>;
+			interrupts-extended = <&L4 3 &L4 7 &L5 3 &L5 7 &L6 3 &L6 7 &L7 3 &L7 7 &L8 3 &L8 7 &L9 3 &L9 7 &L10 3 &L10 7 &L11 3 &L11 7>;
 			reg = <0x0 0x38000000 0x0 0x10000>;
 			reg-names = "control";
 			clock-frequency-mhz = <500>;
@@ -140,7 +232,7 @@
 			#interrupt-cells = <1>;
 			compatible = "riscv,plic0";
 			interrupt-controller;
-			interrupts-extended = <&L4 9 &L4 11 &L5 9 &L5 11 &L6 9 &L6 11 &L7 9 &L7 11>;
+			interrupts-extended = <&L4 9 &L4 11 &L5 9 &L5 11 &L6 9 &L6 11 &L7 9 &L7 11 &L8 9 &L8 11 &L9 9 &L9 11 &L10 9 &L10 11 &L11 9 &L11 11>;
 			//interrupts-extended = <&L4 0xb &L4 0x9 &L5 0xb &L5 0x9>;
 			//reg = <0 0xc000000 0 0x4000000>;
 			reg = <0 0x3c000000 0 0x4000000>;
@@ -160,9 +252,9 @@
 	chosen {
 		bootargs = "console=hvc0 earlycon=sbi ";
 	};
-	L12: memory@80000000 {
+	L23: memory@80000000 {
 		device_type = "memory";
-		reg = <0x0 0x80000000 0x2 0x00000000>;
+		reg = <0x0 0x80000000 0x4 0x00000000>;
 	};
   reserved-memory {
     #address-cells = <2>;
