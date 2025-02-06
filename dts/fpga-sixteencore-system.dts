@@ -1,0 +1,468 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <2>;
+	#size-cells = <2>;
+	compatible = "freechips,rocketchip-unknown-dev";
+	model = "freechips,rocketchip-unknown";
+	CPUS: cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		timebase-frequency = <0x989680>;
+		L1: cpu@0 {
+			compatible = "XiangShan,Nanhu", "riscv";
+			d-cache-block-size = <64>;
+			d-cache-sets = <64>;
+			d-cache-size = <16384>;
+			d-tlb-sets = <1>;
+			d-tlb-size = <32>;
+			device_type = "cpu";
+			i-cache-block-size = <64>;
+			i-cache-sets = <64>;
+			i-cache-size = <16384>;
+			i-tlb-sets = <1>;
+			i-tlb-size = <32>;
+			mmu-type = "riscv,sv39";
+			next-level-cache = <&MEMORY>;
+			reg = <0x0>;
+			riscv,isa = "rv64imafdcvh";
+			status = "okay";
+			tlb-split;
+			L17: interrupt-controller {
+				#interrupt-cells = <1>;
+				compatible = "riscv,cpu-intc";
+				interrupt-controller;
+			};
+		};
+		L2: cpu@1 {
+			compatible = "XiangShan,Nanhu", "riscv";
+			d-cache-block-size = <64>;
+			d-cache-sets = <64>;
+			d-cache-size = <16384>;
+			d-tlb-sets = <1>;
+			d-tlb-size = <32>;
+			device_type = "cpu";
+			i-cache-block-size = <64>;
+			i-cache-sets = <64>;
+			i-cache-size = <16384>;
+			i-tlb-sets = <1>;
+			i-tlb-size = <32>;
+			mmu-type = "riscv,sv39";
+			next-level-cache = <&MEMORY>;
+			reg = <0x1>;
+			riscv,isa = "rv64imafdcvh";
+			status = "okay";
+			tlb-split;
+			L18: interrupt-controller {
+				#interrupt-cells = <1>;
+				compatible = "riscv,cpu-intc";
+				interrupt-controller;
+			};
+		};
+		L3: cpu@2 {
+			compatible = "XiangShan,Nanhu", "riscv";
+			d-cache-block-size = <64>;
+			d-cache-sets = <64>;
+			d-cache-size = <16384>;
+			d-tlb-sets = <1>;
+			d-tlb-size = <32>;
+			device_type = "cpu";
+			i-cache-block-size = <64>;
+			i-cache-sets = <64>;
+			i-cache-size = <16384>;
+			i-tlb-sets = <1>;
+			i-tlb-size = <32>;
+			mmu-type = "riscv,sv39";
+			next-level-cache = <&MEMORY>;
+			reg = <0x2>;
+			riscv,isa = "rv64imafdcvh";
+			status = "okay";
+			tlb-split;
+			L19: interrupt-controller {
+				#interrupt-cells = <1>;
+				compatible = "riscv,cpu-intc";
+				interrupt-controller;
+			};
+		};
+		L4: cpu@3 {
+			compatible = "XiangShan,Nanhu", "riscv";
+			d-cache-block-size = <64>;
+			d-cache-sets = <64>;
+			d-cache-size = <16384>;
+			d-tlb-sets = <1>;
+			d-tlb-size = <32>;
+			device_type = "cpu";
+			i-cache-block-size = <64>;
+			i-cache-sets = <64>;
+			i-cache-size = <16384>;
+			i-tlb-sets = <1>;
+			i-tlb-size = <32>;
+			mmu-type = "riscv,sv39";
+			next-level-cache = <&MEMORY>;
+			reg = <0x3>;
+			riscv,isa = "rv64imafdcvh";
+			status = "okay";
+			tlb-split;
+			L20: interrupt-controller {
+				#interrupt-cells = <1>;
+				compatible = "riscv,cpu-intc";
+				interrupt-controller;
+			};
+		};
+		L5: cpu@4 {
+			compatible = "XiangShan,Nanhu", "riscv";
+			d-cache-block-size = <64>;
+			d-cache-sets = <64>;
+			d-cache-size = <16384>;
+			d-tlb-sets = <1>;
+			d-tlb-size = <32>;
+			device_type = "cpu";
+			i-cache-block-size = <64>;
+			i-cache-sets = <64>;
+			i-cache-size = <16384>;
+			i-tlb-sets = <1>;
+			i-tlb-size = <32>;
+			mmu-type = "riscv,sv39";
+			next-level-cache = <&MEMORY>;
+			reg = <0x4>;
+			riscv,isa = "rv64imafdcvh";
+			status = "okay";
+			tlb-split;
+			L21: interrupt-controller {
+				#interrupt-cells = <1>;
+				compatible = "riscv,cpu-intc";
+				interrupt-controller;
+			};
+		};
+		L6: cpu@5 {
+			compatible = "XiangShan,Nanhu", "riscv";
+			d-cache-block-size = <64>;
+			d-cache-sets = <64>;
+			d-cache-size = <16384>;
+			d-tlb-sets = <1>;
+			d-tlb-size = <32>;
+			device_type = "cpu";
+			i-cache-block-size = <64>;
+			i-cache-sets = <64>;
+			i-cache-size = <16384>;
+			i-tlb-sets = <1>;
+			i-tlb-size = <32>;
+			mmu-type = "riscv,sv39";
+			next-level-cache = <&MEMORY>;
+			reg = <0x5>;
+			riscv,isa = "rv64imafdcvh";
+			status = "okay";
+			tlb-split;
+			L22: interrupt-controller {
+				#interrupt-cells = <1>;
+				compatible = "riscv,cpu-intc";
+				interrupt-controller;
+			};
+		};
+		L7: cpu@6 {
+			compatible = "XiangShan,Nanhu", "riscv";
+			d-cache-block-size = <64>;
+			d-cache-sets = <64>;
+			d-cache-size = <16384>;
+			d-tlb-sets = <1>;
+			d-tlb-size = <32>;
+			device_type = "cpu";
+			i-cache-block-size = <64>;
+			i-cache-sets = <64>;
+			i-cache-size = <16384>;
+			i-tlb-sets = <1>;
+			i-tlb-size = <32>;
+			mmu-type = "riscv,sv39";
+			next-level-cache = <&MEMORY>;
+			reg = <0x6>;
+			riscv,isa = "rv64imafdcvh";
+			status = "okay";
+			tlb-split;
+			L23: interrupt-controller {
+				#interrupt-cells = <1>;
+				compatible = "riscv,cpu-intc";
+				interrupt-controller;
+			};
+		};
+		L8: cpu@7 {
+			compatible = "XiangShan,Nanhu", "riscv";
+			d-cache-block-size = <64>;
+			d-cache-sets = <64>;
+			d-cache-size = <16384>;
+			d-tlb-sets = <1>;
+			d-tlb-size = <32>;
+			device_type = "cpu";
+			i-cache-block-size = <64>;
+			i-cache-sets = <64>;
+			i-cache-size = <16384>;
+			i-tlb-sets = <1>;
+			i-tlb-size = <32>;
+			mmu-type = "riscv,sv39";
+			next-level-cache = <&MEMORY>;
+			reg = <0x7>;
+			riscv,isa = "rv64imafdcvh";
+			status = "okay";
+			tlb-split;
+			L24: interrupt-controller {
+				#interrupt-cells = <1>;
+				compatible = "riscv,cpu-intc";
+				interrupt-controller;
+			};
+		};
+		L9: cpu@8 {
+			compatible = "XiangShan,Nanhu", "riscv";
+			d-cache-block-size = <64>;
+			d-cache-sets = <64>;
+			d-cache-size = <16384>;
+			d-tlb-sets = <1>;
+			d-tlb-size = <32>;
+			device_type = "cpu";
+			i-cache-block-size = <64>;
+			i-cache-sets = <64>;
+			i-cache-size = <16384>;
+			i-tlb-sets = <1>;
+			i-tlb-size = <32>;
+			mmu-type = "riscv,sv39";
+			next-level-cache = <&MEMORY>;
+			reg = <0x8>;
+			riscv,isa = "rv64imafdcvh";
+			status = "okay";
+			tlb-split;
+			L25: interrupt-controller {
+				#interrupt-cells = <1>;
+				compatible = "riscv,cpu-intc";
+				interrupt-controller;
+			};
+		};
+		L10: cpu@9 {
+			compatible = "XiangShan,Nanhu", "riscv";
+			d-cache-block-size = <64>;
+			d-cache-sets = <64>;
+			d-cache-size = <16384>;
+			d-tlb-sets = <1>;
+			d-tlb-size = <32>;
+			device_type = "cpu";
+			i-cache-block-size = <64>;
+			i-cache-sets = <64>;
+			i-cache-size = <16384>;
+			i-tlb-sets = <1>;
+			i-tlb-size = <32>;
+			mmu-type = "riscv,sv39";
+			next-level-cache = <&MEMORY>;
+			reg = <0x9>;
+			riscv,isa = "rv64imafdcvh";
+			status = "okay";
+			tlb-split;
+			L26: interrupt-controller {
+				#interrupt-cells = <1>;
+				compatible = "riscv,cpu-intc";
+				interrupt-controller;
+			};
+		};
+		L11: cpu@10 {
+			compatible = "XiangShan,Nanhu", "riscv";
+			d-cache-block-size = <64>;
+			d-cache-sets = <64>;
+			d-cache-size = <16384>;
+			d-tlb-sets = <1>;
+			d-tlb-size = <32>;
+			device_type = "cpu";
+			i-cache-block-size = <64>;
+			i-cache-sets = <64>;
+			i-cache-size = <16384>;
+			i-tlb-sets = <1>;
+			i-tlb-size = <32>;
+			mmu-type = "riscv,sv39";
+			next-level-cache = <&MEMORY>;
+			reg = <0xa>;
+			riscv,isa = "rv64imafdcvh";
+			status = "okay";
+			tlb-split;
+			L27: interrupt-controller {
+				#interrupt-cells = <1>;
+				compatible = "riscv,cpu-intc";
+				interrupt-controller;
+			};
+		};
+		L12: cpu@11 {
+			compatible = "XiangShan,Nanhu", "riscv";
+			d-cache-block-size = <64>;
+			d-cache-sets = <64>;
+			d-cache-size = <16384>;
+			d-tlb-sets = <1>;
+			d-tlb-size = <32>;
+			device_type = "cpu";
+			i-cache-block-size = <64>;
+			i-cache-sets = <64>;
+			i-cache-size = <16384>;
+			i-tlb-sets = <1>;
+			i-tlb-size = <32>;
+			mmu-type = "riscv,sv39";
+			next-level-cache = <&MEMORY>;
+			reg = <0xb>;
+			riscv,isa = "rv64imafdcvh";
+			status = "okay";
+			tlb-split;
+			L28: interrupt-controller {
+				#interrupt-cells = <1>;
+				compatible = "riscv,cpu-intc";
+				interrupt-controller;
+			};
+		};
+		L13: cpu@12 {
+			compatible = "XiangShan,Nanhu", "riscv";
+			d-cache-block-size = <64>;
+			d-cache-sets = <64>;
+			d-cache-size = <16384>;
+			d-tlb-sets = <1>;
+			d-tlb-size = <32>;
+			device_type = "cpu";
+			i-cache-block-size = <64>;
+			i-cache-sets = <64>;
+			i-cache-size = <16384>;
+			i-tlb-sets = <1>;
+			i-tlb-size = <32>;
+			mmu-type = "riscv,sv39";
+			next-level-cache = <&MEMORY>;
+			reg = <0xc>;
+			riscv,isa = "rv64imafdcvh";
+			status = "okay";
+			tlb-split;
+			L29: interrupt-controller {
+				#interrupt-cells = <1>;
+				compatible = "riscv,cpu-intc";
+				interrupt-controller;
+			};
+		};
+		L14: cpu@13 {
+			compatible = "XiangShan,Nanhu", "riscv";
+			d-cache-block-size = <64>;
+			d-cache-sets = <64>;
+			d-cache-size = <16384>;
+			d-tlb-sets = <1>;
+			d-tlb-size = <32>;
+			device_type = "cpu";
+			i-cache-block-size = <64>;
+			i-cache-sets = <64>;
+			i-cache-size = <16384>;
+			i-tlb-sets = <1>;
+			i-tlb-size = <32>;
+			mmu-type = "riscv,sv39";
+			next-level-cache = <&MEMORY>;
+			reg = <0xd>;
+			riscv,isa = "rv64imafdcvh";
+			status = "okay";
+			tlb-split;
+			L30: interrupt-controller {
+				#interrupt-cells = <1>;
+				compatible = "riscv,cpu-intc";
+				interrupt-controller;
+			};
+		};
+		L15: cpu@14 {
+			compatible = "XiangShan,Nanhu", "riscv";
+			d-cache-block-size = <64>;
+			d-cache-sets = <64>;
+			d-cache-size = <16384>;
+			d-tlb-sets = <1>;
+			d-tlb-size = <32>;
+			device_type = "cpu";
+			i-cache-block-size = <64>;
+			i-cache-sets = <64>;
+			i-cache-size = <16384>;
+			i-tlb-sets = <1>;
+			i-tlb-size = <32>;
+			mmu-type = "riscv,sv39";
+			next-level-cache = <&MEMORY>;
+			reg = <0xe>;
+			riscv,isa = "rv64imafdcvh";
+			status = "okay";
+			tlb-split;
+			L31: interrupt-controller {
+				#interrupt-cells = <1>;
+				compatible = "riscv,cpu-intc";
+				interrupt-controller;
+			};
+		};
+		L16: cpu@15 {
+			compatible = "XiangShan,Nanhu", "riscv";
+			d-cache-block-size = <64>;
+			d-cache-sets = <64>;
+			d-cache-size = <16384>;
+			d-tlb-sets = <1>;
+			d-tlb-size = <32>;
+			device_type = "cpu";
+			i-cache-block-size = <64>;
+			i-cache-sets = <64>;
+			i-cache-size = <16384>;
+			i-tlb-sets = <1>;
+			i-tlb-size = <32>;
+			mmu-type = "riscv,sv39";
+			next-level-cache = <&MEMORY>;
+			reg = <0xf>;
+			riscv,isa = "rv64imafdcvh";
+			status = "okay";
+			tlb-split;
+			L32: interrupt-controller {
+				#interrupt-cells = <1>;
+				compatible = "riscv,cpu-intc";
+				interrupt-controller;
+			};
+		};
+	};
+	SOC: soc {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		compatible = "freechips,rocketchip-unknown-soc", "simple-bus";
+		ranges;
+		CLINT: clint@38000000 {
+			compatible = "riscv,clint0";
+			interrupts-extended = <&L17 3 &L17 7 &L18 3 &L18 7 &L19 3 &L19 7 &L20 3 &L20 7 &L21 3 &L21 7 &L22 3 &L22 7 &L23 3 &L23 7 &L24 3 &L24 7 &L25 3 &L25 7 &L26 3 &L26 7 &L27 3 &L27 7 &L28 3 &L28 7 &L29 3 &L29 7 &L30 3 &L30 7 &L31 3 &L31 7 &L32 3 &L32 7>;
+			reg = <0x0 0x38000000 0x0 0x10000>;
+			reg-names = "control";
+			clock-frequency-mhz = <500>;
+		};
+		PLIC: interrupt-controller@3c000000 {
+			#interrupt-cells = <1>;
+			compatible = "riscv,plic0";
+			interrupt-controller;
+			interrupts-extended = <&L17 9 &L17 11 &L18 9 &L18 11 &L19 9 &L19 11 &L20 9 &L20 11 &L21 9 &L21 11 &L22 9 &L22 11 &L23 9 &L23 11 &L24 9 &L24 11 &L25 9 &L25 11 &L26 9 &L26 11 &L27 9 &L27 11 &L28 9 &L28 11 &L29 9 &L29 11 &L30 9 &L30 11 &L31 9 &L31 11 &L32 9 &L32 11>;
+			//interrupts-extended = <&L4 0xb &L4 0x9 &L5 0xb &L5 0x9>;
+			//reg = <0 0xc000000 0 0x4000000>;
+			reg = <0 0x3c000000 0 0x4000000>;
+			reg-names = "control";
+			riscv,max-priority = <7>;
+			riscv,ndev = <64>;
+		};
+		serial@40600000 {
+			compatible = "xlnx,xps-uartlite-1.00.a";
+			interrupt-parent = <&PLIC>;
+			interrupts = <3>;
+			current-speed = <115200>;
+			reg = <0x0 0x40600000 0x0 0x1000>;
+			reg-names = "control";
+		};
+	};
+	chosen {
+		bootargs = "console=hvc0 earlycon=sbi ";
+	};
+	MEMORY: memory@80000000 {
+		device_type = "memory";
+		reg = <0x0 0x80000000 0x8 0x00000000>;
+	};
+  reserved-memory {
+    #address-cells = <2>;
+    #size-cells = <2>;
+    ranges;
+
+    reserved0: buffer@0{
+      no-map;
+      reg = <0x0 0x80000000 0x0 0x100000>;
+    };
+
+    reserved1: buffer@1{
+      no-map;
+      reg = <0x0 0x80300000 0x0 0x1400000>;
+    };
+  };
+};
