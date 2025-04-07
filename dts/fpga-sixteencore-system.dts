@@ -426,13 +426,19 @@
 			#interrupt-cells = <1>;
 			compatible = "riscv,plic0";
 			interrupt-controller;
-			interrupts-extended = <&L17 9 &L17 11 &L18 9 &L18 11 &L19 9 &L19 11 &L20 9 &L20 11 &L21 9 &L21 11 &L22 9 &L22 11 &L23 9 &L23 11 &L24 9 &L24 11 &L25 9 &L25 11 &L26 9 &L26 11 &L27 9 &L27 11 &L28 9 &L28 11 &L29 9 &L29 11 &L30 9 &L30 11 &L31 9 &L31 11 &L32 9 &L32 11>;
+			interrupts-extended = <&L17 11 &L17 9 &L18 11 &L18 9 &L19 11 &L19 9 &L20 11 &L20 9 &L21 11 &L21 9 &L22 11 &L22 9 &L23 11 &L23 9 &L24 11 &L24 9 &L25 11 &L25 9 &L26 11 &L26 9 &L27 11 &L27 9 &L28 11 &L28 9 &L29 11 &L29 9 &L30 11 &L30 9 &L31 11 &L31 9 &L32 11 &L32 9>;
 			//interrupts-extended = <&L4 0xb &L4 0x9 &L5 0xb &L5 0x9>;
 			//reg = <0 0xc000000 0 0x4000000>;
 			reg = <0 0x3c000000 0 0x4000000>;
 			reg-names = "control";
 			riscv,max-priority = <7>;
 			riscv,ndev = <64>;
+		};
+		virtio: virtio_mmio@10001000 {
+			compatible = "virtio,mmio";
+			reg = <0x0 0x10001000 0x0 0x1000>;
+			interrupt-parent = <&PLIC>;
+			interrupts = <1>;
 		};
 		serial@40600000 {
 			compatible = "xlnx,xps-uartlite-1.00.a";
