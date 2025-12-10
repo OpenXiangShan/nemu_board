@@ -16,7 +16,7 @@ class DTSGen:
                  memories: list = [(0x80000000, 8*1024*1024*1024)], # [(start, size)], default 8 GB at 2 GB
                  reserved_memories: list = [], # [(start, size)]
                  bootargs: str = "console=hvc0 earlycon=sbi rdinit=/sbin/init",
-                 rng_seed: bytes = b"NEMU_BOARD",
+                 rng_seed: bytes = b"XIANGSHAN_NEMU_BOARD_RANDOM_SEED",
                  uartlite_addr: int = 0x40600000,
                  nemu_sdhci_addr: int = None):
         self.isa_extensions = isa_extensions
