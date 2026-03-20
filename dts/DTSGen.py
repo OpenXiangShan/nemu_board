@@ -5,8 +5,9 @@ import re
 
 class DTSGen:
     def __init__(self,
-                 compatible: str = "xiangshan,nemu-board",
+                 compatible: str | list = "xiangshan,nemu-board",
                  model: str = "XiangShan",
+                 cpu_compatibles: list | None = None,
                  isa_extensions: list = ["i", "m", "a", "f", "d", "c"],
                  mmu_type="riscv,sv39",
                  timebase_freq: int = 10000000, # 10 MHz
@@ -27,8 +28,12 @@ class DTSGen:
         self.plic_addr = plic_addr
         self.memories = memories
         self.reserved_memories = reserved_memories
-        self.compatible = compatible
+        if isinstance(compatible, str):
+            self.compatible = [compatible]
+        else:
+            self.compatible = compatible
         self.model = model
+        self.cpu_compatibles = cpu_compatibles or ["riscv"]
         self.bootargs = bootargs
         # Note: console=hvc0 is a hack for NEMU Uartlite to use SBI
         # console to get around the lack of TX FIFO empty interrupt
@@ -43,6 +48,15 @@ class DTSGen:
             self.soc_devices.append(self.__gen_uartlite(uartlite_addr, 3))
         if nemu_sdhci_addr is not None:
             self.soc_devices.append(self.__gen_nemu_sdhci(nemu_sdhci_addr))
+
+    def add_reserved_memory(self, start: int, size: int, name: str | None = None, no_map: bool = True):
+        self.reserved_memories.append({
+            "start": start,
+            "size": size,
+            "name": name,
+            "no_map": no_map,
+        })
+        return self
 
     def indent(text, level: int = 4):
         indent_str = ' ' * level
@@ -76,9 +90,10 @@ riscv,isa-extensions = {", ".join(f'"{ext}"' for ext in isa)};
 
     def __gen_cpu_node(self, hart_id, isa):
         # Reference: https://github.com/torvalds/linux/blob/master/Documentation/devicetree/bindings/riscv/cpus.yaml
+        compatible_list = ", ".join(f'"{compatible}"' for compatible in self.cpu_compatibles)
         return f"""
 cpu{hart_id}: cpu@{hart_id} {{
-    compatible = "riscv";
+    compatible = {compatible_list};
     device_type = "cpu";
     mmu-type = "{self.mmu_type}";
     reg = <{hart_id}>;
@@ -156,13 +171,25 @@ reserved-memory {{
     #size-cells = <2>;
     ranges;
 """
-        for ((start, size), idx) in zip(self.reserved_memories, list(range(len(self.reserved_memories)))):
-            res += DTSGen.indent(f"""
-resv{idx}@{start:x} {{
-    reg = <{DTSGen.gen_addrsize(start, 2)} {DTSGen.gen_addrsize(size, 2)}>;
-    no-map;
-}};
-""".strip() + "\n")
+        for entry, idx in zip(self.reserved_memories, list(range(len(self.reserved_memories)))):
+            if isinstance(entry, dict):
+                start = entry["start"]
+                size = entry["size"]
+                name = entry.get("name") or f"resv{idx}"
+                no_map = entry.get("no_map", True)
+            else:
+                start, size = entry
+                name = f"resv{idx}"
+                no_map = True
+
+            entry_lines = [
+                f"{name}@{start:x} {{",
+                f"    reg = <{DTSGen.gen_addrsize(start, 2)} {DTSGen.gen_addrsize(size, 2)}>;",
+            ]
+            if no_map:
+                entry_lines.append("    no-map;")
+            entry_lines.append("};")
+            res += DTSGen.indent("\n".join(entry_lines) + "\n")
         res += "};"
         return res
     
@@ -301,13 +328,14 @@ soc {{
         return self
 
     def gen_dts(self):
+        compatible_list = ", ".join(f'"{compatible}"' for compatible in self.compatible)
         return f"""
 /dts-v1/;
 
 / {{
     #address-cells = <2>;
     #size-cells = <2>;
-    compatible = "{self.compatible}";
+    compatible = {compatible_list};
     model = "{self.model}";
     
     chosen {{
@@ -334,13 +362,17 @@ soc {{
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser("DTSGen: Generate Device Tree Source for NEMU Board")
+    parser.add_argument("--compatible", type=str, nargs='+', default=["xiangshan,nemu-board"], help="Root compatible strings in priority order")
+    parser.add_argument("--model", type=str, default="XiangShan", help="Root model string")
+    parser.add_argument("--cpu-compatible", type=str, nargs='+', default=["riscv"], help="CPU compatible strings in priority order")
     parser.add_argument("--nr-harts", "-n", type=int, default=1, help="Number of harts")
     parser.add_argument("--nemu-sdhci-addr", "-s", type=lambda x: int(x,0), default=None, help="NEMU SDHCI address")
     parser.add_argument("--reserve-mem", "-r", type=lambda x: int(x,0), nargs=2, action='append', default=[], help="Reserved memory regions, specify as start size pairs in hex")
+    parser.add_argument("--direct-map-mem", type=lambda x: int(x,0), nargs=2, action='append', default=[], help="Reserved direct-map regions, specify as start size pairs in hex")
     parser.add_argument("--isa-extensions", "-i", type=str, nargs='+', default=["i", "m", "a", "f", "d", "c"], help="ISA extensions, e.g., i m a f d c")
     parser.add_argument("--rva-profile", "-p", type=str, default="rva20u64", help="rva profile string, e.g., rva20u64, rva22s64, rva23s64")
     parser.add_argument("--bootargs", "-b", type=str, default="console=hvc0 earlycon=sbi rdinit=/sbin/init", help="Kernel boot arguments")
-    parser.add_argument("--memory-size", "-m", type=int, default=8*1024*1024*1024, help="Total memory size in bytes")
+    parser.add_argument("--memory-size", "-m", type=lambda x: int(x,0), default=8*1024*1024*1024, help="Total memory size in bytes (hex 0x... or decimal)")
     parser.add_argument("--mmu-type", type=str, default="riscv,sv39", help="MMU type")
     parser.add_argument("--timebase-freq", "-t", type=int, default=10000000, help="Timebase frequency in Hz (default 10 MHz)")
     args = parser.parse_args()
@@ -348,12 +380,18 @@ if __name__ == "__main__":
     if args.rva_profile:
         isa_exts.update(set(DTSGen.get_isa_extensions_by_rva_profile(args.rva_profile)))
     dtsgen = DTSGen(
+        compatible=args.compatible,
+        model=args.model,
+        cpu_compatibles=args.cpu_compatible,
         nr_harts=args.nr_harts,
         nemu_sdhci_addr=args.nemu_sdhci_addr,
-        reserved_memories=args.reserve_mem,
         isa_extensions=DTSGen.sort_isa_extensions(list(isa_exts)),
         bootargs=args.bootargs,
         mmu_type=args.mmu_type,
         memories=[(0x80000000, args.memory_size)]
     )
+    for start, size in args.reserve_mem:
+        dtsgen.add_reserved_memory(start, size)
+    for start, size in args.direct_map_mem:
+        dtsgen.add_reserved_memory(start, size, name="direct_map", no_map=False)
     print(dtsgen.gen_dts())
