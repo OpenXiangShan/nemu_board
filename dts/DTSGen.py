@@ -33,7 +33,12 @@ class DTSGen:
         else:
             self.compatible = compatible
         self.model = model
-        self.cpu_compatibles = cpu_compatibles or ["riscv"]
+        if cpu_compatibles is None:
+            self.cpu_compatibles = ["riscv"]
+        elif isinstance(cpu_compatibles, str):
+            self.cpu_compatibles = [cpu_compatibles]
+        else:
+            self.cpu_compatibles = cpu_compatibles
         self.bootargs = bootargs
         # Note: console=hvc0 is a hack for NEMU Uartlite to use SBI
         # console to get around the lack of TX FIFO empty interrupt
