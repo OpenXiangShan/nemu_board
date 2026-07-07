@@ -372,6 +372,7 @@ if __name__ == "__main__":
     parser.add_argument("--cpu-compatible", type=str, nargs='+', default=["riscv"], help="CPU compatible strings in priority order")
     parser.add_argument("--nr-harts", "-n", type=int, default=1, help="Number of harts")
     parser.add_argument("--nemu-sdhci-addr", "-s", type=lambda x: int(x,0), default=None, help="NEMU SDHCI address")
+    parser.add_argument("--uartlite-addr", type=lambda x: int(x,0), default=0x40600000, help="UARTLite MMIO base address")
     parser.add_argument("--reserve-mem", "-r", type=lambda x: int(x,0), nargs=2, action='append', default=[], help="Reserved memory regions, specify as start size pairs (hex 0x... or decimal)")
     parser.add_argument("--direct-map-mem", type=lambda x: int(x,0), nargs=2, action='append', default=[], help="Reserved direct-map regions, specify as start size pairs (hex 0x... or decimal)")
     parser.add_argument("--isa-extensions", "-i", type=str, nargs='+', default=["i", "m", "a", "f", "d", "c"], help="ISA extensions, e.g., i m a f d c")
@@ -389,6 +390,7 @@ if __name__ == "__main__":
         model=args.model,
         cpu_compatibles=args.cpu_compatible,
         nr_harts=args.nr_harts,
+        uartlite_addr=args.uartlite_addr,
         nemu_sdhci_addr=args.nemu_sdhci_addr,
         isa_extensions=DTSGen.sort_isa_extensions(list(isa_exts)),
         bootargs=args.bootargs,
