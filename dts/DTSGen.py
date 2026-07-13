@@ -19,6 +19,8 @@ class DTSGen:
                  bootargs: str = "console=hvc0 earlycon=sbi rdinit=/sbin/init",
                  rng_seed: bytes = b"XIANGSHAN_NEMU_BOARD_RANDOM_SEED",
                  uartlite_addr: int = 0x40600000,
+                 initrd_start: int | None = None,
+                 initrd_end: int | None = None,
                  nemu_sdhci_addr: int = None):
         self.isa_extensions = isa_extensions
         self.mmu_type = mmu_type
@@ -53,6 +55,8 @@ class DTSGen:
             self.soc_devices.append(self.__gen_uartlite(uartlite_addr, 3))
         if nemu_sdhci_addr is not None:
             self.soc_devices.append(self.__gen_nemu_sdhci(nemu_sdhci_addr))
+        self.initrd_start = initrd_start
+        self.initrd_end = initrd_end
 
     def add_reserved_memory(self, start: int, size: int, name: str | None = None, no_map: bool = True):
         self.reserved_memories.append({
@@ -345,6 +349,8 @@ soc {{
     
     chosen {{
 {DTSGen.indent(f'bootargs = "{self.bootargs}";', 8) if self.bootargs else ''}
+{DTSGen.indent(f'linux,initrd-start = <{DTSGen.gen_addrsize(self.initrd_start, 2)}>;', 8) if self.initrd_start is not None else ''}
+{DTSGen.indent(f'linux,initrd-end = <{DTSGen.gen_addrsize(self.initrd_end, 2)}>;', 8) if self.initrd_end is not None else ''}
 {DTSGen.indent(f'rng-seed = /bits/ 8 <{" ".join(f"0x{b:02x}" for b in self.rng_seed)}>;', 8) if self.rng_seed else ''}
     }};
 
@@ -381,6 +387,8 @@ if __name__ == "__main__":
     parser.add_argument("--memory-size", "-m", type=lambda x: int(x,0), default=8*1024*1024*1024, help="Total memory size in bytes (hex 0x... or decimal)")
     parser.add_argument("--mmu-type", type=str, default="riscv,sv39", help="MMU type")
     parser.add_argument("--timebase-freq", "-t", type=int, default=10000000, help="Timebase frequency in Hz (default 10 MHz)")
+    parser.add_argument("--initrd-start", type=lambda x: int(x,0), default=None)
+    parser.add_argument("--initrd-end", type=lambda x: int(x,0), default=None)
     args = parser.parse_args()
     isa_exts = set(args.isa_extensions)
     if args.rva_profile:
@@ -395,7 +403,9 @@ if __name__ == "__main__":
         isa_extensions=DTSGen.sort_isa_extensions(list(isa_exts)),
         bootargs=args.bootargs,
         mmu_type=args.mmu_type,
-        memories=[(0x80000000, args.memory_size)]
+        memories=[(0x80000000, args.memory_size)],
+        initrd_start=args.initrd_start,
+        initrd_end=args.initrd_end
     )
     for start, size in args.reserve_mem:
         dtsgen.add_reserved_memory(start, size)
