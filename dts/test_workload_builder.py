@@ -112,11 +112,48 @@ class GeneratorTests(unittest.TestCase):
                             checkpoint["body"])
                         self.assertIn("no-map;", checkpoint["body"])
 
+            fpga_name = "xiangshan-fpga-noAIA-mem16g-novec"
+            v3 = root / "v3.dts.in"
+            subprocess.run([sys.executable, str(script), "--name", fpga_name,
+                            "--output", str(v3)], check=True)
+            explicit_v3 = root / "explicit-v3.dts.in"
+            subprocess.run([sys.executable, str(script), "--name", fpga_name,
+                            "--output", str(explicit_v3),
+                            "--isa-config", "kunminghu-v3"], check=True)
+            self.assertEqual(v3.read_text(), explicit_v3.read_text())
+
+            v2 = root / "v2.dts.in"
+            subprocess.run([sys.executable, str(script), "--name", fpga_name,
+                            "--output", str(v2),
+                            "--isa-config", "kunminghu-v2"], check=True)
+            v2_text = v2.read_text()
+            self.assertIn('riscv,isa = "rv64imafdch_', v2_text)
+            self.assertIn('"ss1p13"', v2_text)
+            self.assertNotIn('"v"', v2_text)
+
+            vector_v2 = root / "vector-v2.dts.in"
+            subprocess.run([
+                sys.executable, str(script), "--name", "xiangshan-fpga-noAIA-mem16g",
+                "--output", str(vector_v2), "--isa-config", "kunminghu-v2",
+            ], check=True)
+            self.assertIn('riscv,isa = "rv64imafdcvh_', vector_v2.read_text())
+            self.assertIn('"v"', vector_v2.read_text())
+
+            invalid_profile = subprocess.run([
+                sys.executable, str(script), "--name", "xiangshan-qemu-nemu-mem2g",
+                "--output", str(root / "qemu-v2.dts.in"),
+                "--isa-config", "kunminghu-v2",
+            ], text=True, capture_output=True)
+            self.assertNotEqual(invalid_profile.returncode, 0)
+            self.assertIn("--isa-config is supported by the FPGA noAIA profile only",
+                          invalid_profile.stderr)
+
             custom = root / "custom.dts.in"
             custom.write_text("custom template\n")
             subprocess.run([
                 sys.executable, str(script), "--name", "custom",
-                "--output", str(custom), "--preserve-existing-unsupported",
+                "--output", str(custom), "--isa-config", "kunminghu-v2",
+                "--preserve-existing-unsupported",
             ], check=True)
             self.assertEqual(custom.read_text(), "custom template\n")
 
@@ -127,6 +164,25 @@ class GeneratorTests(unittest.TestCase):
             ], text=True, capture_output=True)
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("unsupported DTS basename: missing", result.stderr)
+
+            custom_dir = root / "dts"
+            custom_dir.mkdir()
+            (custom_dir / "vendor-board.dts.in").write_text("vendor template\n")
+            copied = root / "vendor-board.dts.in"
+            subprocess.run([
+                sys.executable, str(script), "--name", "vendor-board",
+                "--output", str(copied), "--custom-template-dir", str(custom_dir),
+            ], check=True)
+            self.assertEqual(copied.read_text(), "vendor template\n")
+
+            absent_dir = root / "absent-dts" / "absent-board.dts.in"
+            absent = subprocess.run([
+                sys.executable, str(script), "--name", "absent-board",
+                "--output", str(absent_dir), "--custom-template-dir",
+                str(custom_dir),
+            ], text=True, capture_output=True)
+            self.assertNotEqual(absent.returncode, 0)
+            self.assertFalse(absent_dir.exists())
 
             recognized = root / "xiangshan.dts.in"
             recognized.write_text("stale generated template\n")
@@ -154,6 +210,51 @@ class GeneratorTests(unittest.TestCase):
         self.assertIn("clint: clint@38000000", soc)
         self.assertIn("plic: interrupt-controller@3c000000", soc)
         self.assertEqual(soc.count('reg-names = "control";'), 3)
+
+    @unittest.skipUnless(DTC and FDTGET and BUILDER, "DTC, FDTGET and WORKLOAD_BUILDER required")
+    def test_builder_isa_config_reaches_packed_dtb(self):
+        name = "xiangshan-fpga-noAIA-mem16g-novec"
+        dtbs = {}
+        for isa_config, expected, absent in [
+                (None, "zicbom", "zca"),
+                ("kunminghu-v3", "zicbom", "zca"),
+                ("kunminghu-v2", "zca", "zicbom")]:
+            with self.subTest(isa_config=isa_config), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                templates = root / "templates"
+                gcpt, kernel = root / "gcpt.bin", root / "Image"
+                gcpt.write_bytes(b"GCPT" * 16)
+                kernel.write_bytes(b"KERNEL" * 1024)
+                sbi_dir = root / "sbi"
+                sbi = sbi_dir / "build/platform/generic/firmware/fw_jump.bin"
+                sbi.parent.mkdir(parents=True)
+                sbi.write_bytes(b"SBI" * 128)
+                workload = root / "workload"
+                workload.mkdir()
+                (workload / "rootfs.cpio").write_bytes(b"INITRAMFS" * 1024)
+                env = dict(os.environ, DTC=str(DTC), DEFAULT_DTB=name,
+                           MULTIHART="0", HARTS="1")
+                for key in ("DTB_MEMORY_PROFILE", "DTB_MIN_MEMORY_BYTES",
+                            "DTB_REQUIRED_MIN_MEMORY_BYTES", "FIRMWARE_OUTPUT"):
+                    env.pop(key, None)
+                if isa_config:
+                    env["DTS_ISA_CONFIG"] = isa_config
+                else:
+                    env.pop("DTS_ISA_CONFIG", None)
+                packed = subprocess.run(
+                    ["bash", str(Path(BUILDER) / "scripts/build-firmware-linux.sh"),
+                     str(gcpt), str(sbi_dir), str(templates), str(kernel), str(workload)],
+                    env=env, text=True, capture_output=True)
+                self.assertEqual(packed.returncode, 0, packed.stderr)
+                dtb = workload / "dt" / f"{name}.dtb"
+                extensions = subprocess.check_output(
+                    [str(FDTGET), str(dtb), "/cpus/cpu@0", "riscv,isa-extensions"],
+                    text=True).split()
+                self.assertIn(expected, extensions)
+                self.assertNotIn(absent, extensions)
+                dtbs[isa_config] = dtb.read_bytes()
+        self.assertEqual(dtbs[None], dtbs["kunminghu-v3"])
+        self.assertNotEqual(dtbs[None], dtbs["kunminghu-v2"])
 
     @unittest.skipUnless(DTC and FDTGET and BUILDER, "DTC, FDTGET and WORKLOAD_BUILDER required")
     def test_real_builder_packs_generated_templates(self):
