@@ -2,6 +2,7 @@
 
 from functools import cmp_to_key
 import re
+import json
 
 class DTSGen:
     def __init__(self,
@@ -19,7 +20,18 @@ class DTSGen:
                  bootargs: str = "console=hvc0 earlycon=sbi rdinit=/sbin/init",
                  rng_seed: bytes = b"XIANGSHAN_NEMU_BOARD_RANDOM_SEED",
                  uartlite_addr: int = 0x40600000,
-                 nemu_sdhci_addr: int = None):
+                 nemu_sdhci_addr: int = None,
+                 plic_ndev: int = 64,
+                 plic_machine_first: bool = True,
+                 cpu_properties: str = "",
+                 chosen_properties: str = "",
+                 root_nodes: list | None = None,
+                 legacy_isa: str | None = None,
+                 cache_block_operations: list | None = None,
+                 interrupts_in_soc: bool = False,
+                 soc_compatible: str | list = "simple-bus",
+                 plic_node_name: str = "plic",
+                 interrupt_reg_names: str | None = None):
         self.isa_extensions = isa_extensions
         self.mmu_type = mmu_type
         self.timebase_freq = timebase_freq
@@ -27,7 +39,19 @@ class DTSGen:
         self.clint_addr = clint_addr
         self.plic_addr = plic_addr
         self.memories = memories
-        self.reserved_memories = reserved_memories
+        self.reserved_memories = list(reserved_memories)
+        self.plic_ndev = plic_ndev
+        self.plic_machine_first = plic_machine_first
+        self.cpu_properties = cpu_properties
+        self.chosen_properties = chosen_properties
+        self.root_nodes = list(root_nodes or [])
+        self.legacy_isa = legacy_isa
+        self.cache_block_operations = cache_block_operations
+        self.interrupts_in_soc = interrupts_in_soc
+        self.soc_compatible = ([soc_compatible] if isinstance(soc_compatible, str)
+                               else soc_compatible)
+        self.plic_node_name = plic_node_name
+        self.interrupt_reg_names = interrupt_reg_names
         if isinstance(compatible, str):
             self.compatible = [compatible]
         else:
@@ -84,11 +108,14 @@ memory@{memory_start:x} {{
     def __gen_isa_string(self, isa, cacheline_size=64):
         # Cache parameters are used for Zicbom / Zicbop / Zicboz
         # support in Linux
+        cache_block_operations = (set(self.cache_block_operations)
+                                  if self.cache_block_operations is not None
+                                  else {"zicbom", "zicbop", "zicboz"})
         return f"""
-{ f"riscv,cbom-block-size = <{cacheline_size}>;" if "zicbom" in isa else "" }
-{ f"riscv,cbop-block-size = <{cacheline_size}>;" if "zicbop" in isa else "" }
-{ f"riscv,cboz-block-size = <{cacheline_size}>;" if "zicboz" in isa else "" }
-riscv,isa = "rv64i{'m' if 'm' in isa else ''}{'a' if 'a' in isa else ''}{'f' if 'f' in isa else ''}{'d' if 'd' in isa else ''}{'c' if 'c' in isa else ''}{'v' if 'v' in isa else ''}{'h' if 'h' in isa else ''}";
+{ f"riscv,cbom-block-size = <{cacheline_size}>;" if "zicbom" in isa and "zicbom" in cache_block_operations else "" }
+{ f"riscv,cbop-block-size = <{cacheline_size}>;" if "zicbop" in isa and "zicbop" in cache_block_operations else "" }
+{ f"riscv,cboz-block-size = <{cacheline_size}>;" if "zicboz" in isa and "zicboz" in cache_block_operations else "" }
+riscv,isa = "{self.legacy_isa or ('rv64i' + ''.join(ext for ext in 'mafdcvh' if ext in isa))}";
 riscv,isa-base = "rv64i";
 riscv,isa-extensions = {", ".join(f'"{ext}"' for ext in isa)};
 """.strip()
@@ -97,12 +124,13 @@ riscv,isa-extensions = {", ".join(f'"{ext}"' for ext in isa)};
         # Reference: https://github.com/torvalds/linux/blob/master/Documentation/devicetree/bindings/riscv/cpus.yaml
         compatible_list = ", ".join(f'"{compatible}"' for compatible in self.cpu_compatibles)
         return f"""
-cpu{hart_id}: cpu@{hart_id} {{
+cpu{hart_id}: cpu@{hart_id:x} {{
     compatible = {compatible_list};
     device_type = "cpu";
     mmu-type = "{self.mmu_type}";
     reg = <{hart_id}>;
 {DTSGen.indent(self.__gen_isa_string(isa))}
+{DTSGen.indent(self.cpu_properties)}
 
     cpu{hart_id}_intc: interrupt-controller {{
         #interrupt-cells = <1>;
@@ -139,6 +167,7 @@ cpus {{
 clint: clint@{self.clint_addr:x} {{
     compatible = "riscv,clint0";
     reg = <{DTSGen.gen_addrsize(self.clint_addr, 2)} {DTSGen.gen_addrsize(0x10000, 2)}>;
+{f'    reg-names = "{self.interrupt_reg_names}";' if self.interrupt_reg_names else ''}
 {cpu_intc_str};
 }};
 """.strip()
@@ -148,7 +177,8 @@ clint: clint@{self.clint_addr:x} {{
         if self.plic_addr is None:
             return ""
         # 11 is MEI, 9 is SEI
-        cpu_intc_list = [f"<&cpu{hart_id}_intc 11>, <&cpu{hart_id}_intc 9>" for hart_id in range(self.nr_harts)]
+        irqs = (11, 9) if self.plic_machine_first else (9, 11)
+        cpu_intc_list = [f"<&cpu{hart_id}_intc {irqs[0]}>, <&cpu{hart_id}_intc {irqs[1]}>" for hart_id in range(self.nr_harts)]
         cpu_intc_head = "    interrupts-extended = ";
         cpu_intc_str = cpu_intc_head
         for each_intc in zip(cpu_intc_list, list(range(self.nr_harts))):
@@ -156,9 +186,10 @@ clint: clint@{self.clint_addr:x} {{
             if each_intc[1] != self.nr_harts - 1:
                 cpu_intc_str += ",\n" + " " * (len(cpu_intc_head))
         return f"""
-plic: plic@{self.plic_addr:x} {{
+plic: {self.plic_node_name}@{self.plic_addr:x} {{
     compatible = "riscv,plic0";
     reg = <{DTSGen.gen_addrsize(self.plic_addr, 2)} {DTSGen.gen_addrsize(0x4000000, 2)}>;
+{f'    reg-names = "{self.interrupt_reg_names}";' if self.interrupt_reg_names else ''}
     #interrupt-cells = <1>;
     interrupt-controller;
 {cpu_intc_str};
@@ -222,13 +253,18 @@ mmc@{sd_addr:x} {{
 """.strip()
     
     def __gen_soc(self):
+        compatible_list = ", ".join(f'"{compatible}"' for compatible in self.soc_compatible)
         res = f"""
 soc {{
     #address-cells = <2>;
     #size-cells = <2>;
-    compatible = "simple-bus";
+    compatible = {compatible_list};
     ranges;
 """ + "\n"
+        if self.interrupts_in_soc:
+            for dev_str in (self.__gen_clint(), self.__gen_plic(ndev=self.plic_ndev)):
+                if dev_str:
+                    res += DTSGen.indent(dev_str, 4) + "\n\n"
         for dev_str in self.soc_devices:
             res += DTSGen.indent(dev_str, 4) + "\n\n"
         res += "};"
@@ -344,21 +380,24 @@ soc {{
     model = "{self.model}";
     
     chosen {{
-{DTSGen.indent(f'bootargs = "{self.bootargs}";', 8) if self.bootargs else ''}
+{DTSGen.indent(f'bootargs = {json.dumps(self.bootargs)};', 8) if self.bootargs else ''}
 {DTSGen.indent(f'rng-seed = /bits/ 8 <{" ".join(f"0x{b:02x}" for b in self.rng_seed)}>;', 8) if self.rng_seed else ''}
+{DTSGen.indent(self.chosen_properties, 8)}
     }};
 
 {DTSGen.indent('\n'.join(self.__gen_memory(start, size) for (start, size) in self.memories))}
 
 {DTSGen.indent(self.__gen_cpus())}
 
-{DTSGen.indent(self.__gen_clint())}
+{DTSGen.indent(self.__gen_clint()) if not self.interrupts_in_soc else ''}
 
-{DTSGen.indent(self.__gen_plic())}
+{DTSGen.indent(self.__gen_plic(ndev=self.plic_ndev)) if not self.interrupts_in_soc else ''}
 
 {DTSGen.indent(self.__gen_reserved_memory())}
 
 {DTSGen.indent(self.__gen_soc())}
+
+{DTSGen.indent(chr(10).join(self.root_nodes))}
 
 }};
 """.strip()
@@ -395,6 +434,7 @@ if __name__ == "__main__":
         isa_extensions=DTSGen.sort_isa_extensions(list(isa_exts)),
         bootargs=args.bootargs,
         mmu_type=args.mmu_type,
+        timebase_freq=args.timebase_freq,
         memories=[(0x80000000, args.memory_size)]
     )
     for start, size in args.reserve_mem:
