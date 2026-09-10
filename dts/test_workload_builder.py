@@ -30,6 +30,10 @@ class GeneratorTests(unittest.TestCase):
         first.add_reserved_memory(0x80000000, 0x100000)
         self.assertNotIn("reserved-memory", DTSGen().gen_dts())
 
+    def test_generated_rng_seed_is_annotated(self):
+        self.assertIn('/* ASCII: "XIANGSHAN_NEMU_BOARD_RANDOM_SEED" */',
+                      DTSGen().gen_dts())
+
     def test_existing_cli_timebase_is_applied(self):
         result = subprocess.run([sys.executable, str(HERE / "DTSGen.py"),
                                  "--timebase-freq", "1000000"],

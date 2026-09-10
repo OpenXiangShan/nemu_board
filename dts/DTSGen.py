@@ -381,7 +381,7 @@ soc {{
     
     chosen {{
 {DTSGen.indent(f'bootargs = {json.dumps(self.bootargs)};', 8) if self.bootargs else ''}
-{DTSGen.indent(f'rng-seed = /bits/ 8 <{" ".join(f"0x{b:02x}" for b in self.rng_seed)}>;', 8) if self.rng_seed else ''}
+{DTSGen.indent(f'/* ASCII: "{self.rng_seed.decode("ascii", "backslashreplace")}" */\nrng-seed = /bits/ 8 <{" ".join(f"0x{b:02x}" for b in self.rng_seed)}>;', 8) if self.rng_seed else ''}
 {DTSGen.indent(self.chosen_properties, 8)}
     }};
 
