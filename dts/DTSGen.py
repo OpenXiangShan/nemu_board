@@ -19,6 +19,8 @@ class DTSGen:
                  bootargs: str = "console=hvc0 earlycon=sbi rdinit=/sbin/init",
                  rng_seed: bytes = b"XIANGSHAN_NEMU_BOARD_RANDOM_SEED",
                  uartlite_addr: int = 0x40600000,
+                 initrd_start: int | None = None,
+                 initrd_end: int | None = None,
                  nemu_sdhci_addr: int = None):
         self.isa_extensions = isa_extensions
         self.mmu_type = mmu_type
@@ -40,6 +42,8 @@ class DTSGen:
         else:
             self.cpu_compatibles = cpu_compatibles
         self.bootargs = bootargs
+        self.initrd_start = initrd_start
+        self.initrd_end = initrd_end
         # Note: console=hvc0 is a hack for NEMU Uartlite to use SBI
         # console to get around the lack of TX FIFO empty interrupt
         # implementation. The proper param should be "console=ttyUL0"
@@ -345,6 +349,8 @@ soc {{
     
     chosen {{
 {DTSGen.indent(f'bootargs = "{self.bootargs}";', 8) if self.bootargs else ''}
+{DTSGen.indent(f'linux,initrd-start = <{DTSGen.gen_addrsize(self.initrd_start, 2)}>;', 8) if self.initrd_start is not None else ''}
+{DTSGen.indent(f'linux,initrd-end = <{DTSGen.gen_addrsize(self.initrd_end, 2)}>;', 8) if self.initrd_end is not None else ''}
 {DTSGen.indent(f'rng-seed = /bits/ 8 <{" ".join(f"0x{b:02x}" for b in self.rng_seed)}>;', 8) if self.rng_seed else ''}
     }};
 
@@ -381,6 +387,8 @@ if __name__ == "__main__":
     parser.add_argument("--memory-size", "-m", type=lambda x: int(x,0), default=8*1024*1024*1024, help="Total memory size in bytes (hex 0x... or decimal)")
     parser.add_argument("--mmu-type", type=str, default="riscv,sv39", help="MMU type")
     parser.add_argument("--timebase-freq", "-t", type=int, default=10000000, help="Timebase frequency in Hz (default 10 MHz)")
+    parser.add_argument("--initrd-start", type=lambda x: int(x,0), default=None, help="Initramfs start address")
+    parser.add_argument("--initrd-end", type=lambda x: int(x,0), default=None, help="Initramfs end address")
     args = parser.parse_args()
     isa_exts = set(args.isa_extensions)
     if args.rva_profile:
@@ -392,6 +400,9 @@ if __name__ == "__main__":
         nr_harts=args.nr_harts,
         uartlite_addr=args.uartlite_addr,
         nemu_sdhci_addr=args.nemu_sdhci_addr,
+        timebase_freq=args.timebase_freq,
+        initrd_start=args.initrd_start,
+        initrd_end=args.initrd_end,
         isa_extensions=DTSGen.sort_isa_extensions(list(isa_exts)),
         bootargs=args.bootargs,
         mmu_type=args.mmu_type,
